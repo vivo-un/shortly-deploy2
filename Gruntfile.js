@@ -3,6 +3,14 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      lib: {
+        src: ['public/lib/jquery.js', 'public/lib/underscore.js', 'public/lib/backbone.js', 'public/lib/handlebars.js'],
+        dest: 'public/dist/lib.js'
+      },
+      client: {
+        src: ['public/client/**/*.js'],
+        dest: 'public/dist/client.js'
+      }
     },
 
     mochaTest: {
@@ -21,11 +29,28 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        mangle: false
+      },
+      lib: {
+        files: {
+          'public/dist/lib.min.js': ['public/dist/lib.js']
+        }
+      },
+      client: {
+        files: {
+          'public/dist/client.min.js': ['public/dist/client.js']
+        }
+      }
     },
 
     jshint: {
       files: [
-        // Add filespec list here
+        'app/**/*.js',
+        'lib/**/*.js',
+        'public/**/*.js',
+        'test/**/*.js',
+        'views/**/*.js'
       ],
       options: {
         force: 'true',
@@ -38,6 +63,11 @@ module.exports = function(grunt) {
     },
 
     cssmin: {
+      combine: {
+        files: {
+          'public/style.min.css': ['public/*.css']
+        }
+      }
     },
 
     watch: {
@@ -45,6 +75,7 @@ module.exports = function(grunt) {
         files: [
           'public/client/**/*.js',
           'public/lib/**/*.js',
+          'Gruntfile.js'
         ],
         tasks: [
           'concat',
@@ -59,6 +90,12 @@ module.exports = function(grunt) {
 
     shell: {
       prodServer: {
+        options: {},
+        command: [
+          'git add .',
+          'git commit -m "Automatic update from grunt"',
+          'git push azure master' // <-- after building need to issue these commands
+        ].join('&&')
       }
     },
   });
@@ -72,6 +109,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-nodemon');
 
+  //just loads node and watches for any file changes
   grunt.registerTask('server-dev', function (target) {
     // Running nodejs in a different process and displaying output on the main console
     var nodemon = grunt.util.spawn({
@@ -90,15 +128,20 @@ module.exports = function(grunt) {
   ////////////////////////////////////////////////////
 
   grunt.registerTask('test', [
-    'mochaTest'
+    'mochaTest',
+    'jshint'
   ]);
 
   grunt.registerTask('build', [
+    'concat',
+    'uglify',
+    'cssmin'
   ]);
 
   grunt.registerTask('upload', function(n) {
     if(grunt.option('prod')) {
       // add your production server task here
+      grunt.task.run([ 'shell' ]);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
@@ -106,6 +149,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('deploy', [
     // add your deploy tasks here
+    'test',
+    'build',
+    'upload:prod'
   ]);
 
 

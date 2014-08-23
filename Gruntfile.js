@@ -151,7 +151,7 @@ module.exports = function(grunt) {
     // add your deploy tasks here
     'test',
     'build',
-    'upload'
+    'upload' //use 'grunt deploy --prod' ???
   ]);
-  
+
 };

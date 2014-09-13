@@ -1,3 +1,20 @@
+var mongoose = require('mongoose');
+var mongoPort = 'localhost:27017/shortly-mongo';
+mongoose.connect(mongoPort);
+
+var db = mongoose.connection;
+
+db.on('error', function() {
+  console.log('lol');
+});
+
+db.once('open', function () {
+  console.log('Connection Success')
+});
+
+/* Make similar mongo files here */
+
+/*
 var Bookshelf = require('bookshelf');
 var path = require('path');
 
@@ -41,5 +58,5 @@ db.knex.schema.hasTable('users').then(function(exists) {
     });
   }
 });
-
+*/
 module.exports = db;
